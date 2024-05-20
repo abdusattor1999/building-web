@@ -17,113 +17,137 @@
       <div class="form-group">
         <label for="services">Qanday xizmatlar ko'rsata olasiz ?</label><br />
         <select v-model="formData.services" id="services" multiple required>
-          <option v-for="service in services" :key="service.id">{{ service.name }}</option>
+          <option v-for="service in services" :key="service.id" :value="service.id">
+            {{ service.name }}
+          </option>
         </select>
       </div>
       <div class="form-group">
         <label for="regions">Qaysi tumanlarda ishlay olasiz ?</label><br />
         <select v-model="formData.regions" id="regions" multiple required>
-          <option v-for="region in regions" :key="region.id">{{ region.name }}</option>
+          <option v-for="region in regions" :key="region.id" :value="region.id">
+            {{ region.name }}
+          </option>
         </select>
       </div>
       <div class="form-group">
         <label for="passportPhoto">Passport Rasmi</label><br />
-        <p v-if="formData.passportPhoto">{{ formData.passportPhoto.name }}</p>
+        <p v-if="formData.passport_photo">{{ formData.passport_photo.name }}</p>
         <br />
-        <input type="file" id="passportPhoto" ref="passportPhotoInput" required />
+        <input type="file" id="passportPhoto" @change="setUserPhoto" required />
       </div>
       <input type="hidden" v-model="chatId" />
       <button type="submit" class="submit_button">Yuborish</button>
     </form>
-    <v-modal v-model="showModal" :content="modalContent">
-      <template #header> Server Response </template>
-    </v-modal>
+    <FormModel
+      v-if="model.isOpen"
+      :is-model-open="model.isOpen"
+      :success-text="model.successText"
+      :error-text="model.errorText"
+      :close-sign="model.closeSignText"
+      :close-model="closeModal"
+    />
   </div>
 </template>
 
-<script>
-import { ref, watchEffect, onMounted } from 'vue'
-// import { VModal } from 'vuetify/lib'
+<script setup>
+import { ref, reactive, onMounted, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
+import FormModel from '@/components/FormModel.vue'
 
-const SERVER_URL = 'http://localhost:7778'
-export default {
-  setup() {
-    const chatId = ref(new URLSearchParams(window.location.search).get('chat_id'))
-    const formData = ref({
-      first_name: '',
-      last_name: '',
-      phone: '',
-      services: [],
-      regions: []
-    })
-    const services = ref([])
-    const regions = ref([])
+const SERVER_URL = 'http://localhost:7778/api/v1'
+const route = useRoute()
 
-    const showModal = ref(false)
-    const modalContent = ref('')
+const formData = reactive({
+  first_name: '1',
+  last_name: '1',
+  phone: '+998901234567',
+  passport_photo: '',
+  services: [],
+  regions: [],
+  chat_id: ''
+})
+const services = ref([])
+const regions = ref([])
 
-    const fetchChoices = async () => {
-      try {
-        const response = await fetch(`${SERVER_URL}/api/v1/choices`)
-        console.log(response.data)
-        services.value = response.data.services
-        regions.value = response.data.regions
-      } catch (error) {
-        console.error('Error fetching choices:', error)
-        // Handle errors appropriately, e.g., display an error message to the user
-      }
-    }
+const model = reactive({
+  isOpen: false,
+  closeSignText: '',
+  successText: '',
+  errorText: ''
+})
 
-    const handleSubmit = async (event) => {
-      event.preventDefault()
-      const formDataWithPhoto = new FormData()
-      for (const key in formData.value) {
-        formDataWithPhoto.append(key, formData.value[key])
-      }
-      formDataWithPhoto.append('passportPhoto', event.target.elements.passportPhoto.files[0])
+const closeModal = () => {
+  model.isOpen = false
+}
 
-      try {
-        const response = await fetch('SERVER_URL/master', formDataWithPhoto, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          method: 'POST'
-        })
-        // Handle successful submission, e.g., display a success message or redirect
-        console.log('Form submitted successfully!')
-
-        if (response.status === 200) {
-          modalContent.value = response.data.message
-          showModal.value = true
-          // Handle successful submission (e.g., clear form, redirect)
-        } else if (response.status === 400) {
-          modalContent.value = response.data.error
-          showModal.value = true
-        } else if (response.status === 401) {
-          modalContent.value = response.data.error
-          showModal.value = true
-          // Close the web app in Telegram bot (implementation depends on your bot framework)
-          console.error('User unauthorized, closing app')
-          window.Telegram.WebApp.close()
-        } else {
-          console.error('Unexpected server response:', response)
-          // Handle unexpected responses
-          modalContent.value = 'An unexpected error occurred.'
-          showModal.value = true
-        }
-      } catch (error) {
-        console.error('Error submitting form:', error)
-        // Handle errors appropriately, e.g., display an error message to the user
-      }
-    }
-
-    // Fetch choices on component mount (improved for efficiency)
-    onMounted(fetchChoices)
-
-    // Update chatId if URL changes (improved clarity)
-    watchEffect(() => {
-      chatId.value = new URLSearchParams(window.location.search).get('chat_id')
-    }, [window.location.search])
-
-    return { chatId, formData, services, regions, handleSubmit }
+const setShowModelBool = (show = true, text = '', type = 'success') => {
+  model.isOpen = show
+  switch (type) {
+    case 'success':
+      model.successText = text
+      break
+    case 'error':
+      model.errorText = text
+      break
+    case 'close':
+      model.errorText = text
   }
 }
+
+const setUserPhoto = (event) => {
+  formData.passport_photo = event.target.files[0]
+}
+
+const fetchChoices = async () => {
+  try {
+    const response = await fetch(`${SERVER_URL}/choices`)
+    const res_data = await response.json()
+    services.value = res_data.services
+    regions.value = res_data.regions
+  } catch (error) {
+    console.error('Error fetching choices:', error)
+    // Handle errors appropriately, e.g., display an error message to the user
+  }
+}
+
+const handleSubmit = async () => {
+  const formDataWithPhoto = new FormData()
+  formData.chat_id = route.query.chat_id
+  for (const key in formData) {
+    if (key === 'services') {
+      formDataWithPhoto.append('services', JSON.stringify(formData.services))
+    } else if (key === 'regions') {
+      formDataWithPhoto.append('regions', JSON.stringify(formData.regions))
+    } else {
+      formDataWithPhoto.append(key, formData[key])
+    }
+  }
+
+  try {
+    const response = await fetch(`${SERVER_URL}/master`, {
+      method: 'POST',
+      // headers: { 'Content-Type': 'multipart/form-data' },
+      body: formDataWithPhoto
+    })
+    const registerUserData = await response.json()
+    console.log(registerUserData)
+    if (response.status === 404) {
+      setShowModelBool(true, registerUserData.error, 'error')
+    } else if (response.status === 400) {
+      setShowModelBool(true, registerUserData.error, 'close')
+    } else {
+      setShowModelBool(true, registerUserData.message, 'success')
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error.response)
+  }
+}
+watchEffect(() => {
+  console.log(formData.passport_photo)
+})
+// Fetch choices on component mount (improved for efficiency)
+onMounted(async () => {
+  await fetchChoices()
+})
 </script>
