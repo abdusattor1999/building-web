@@ -18,13 +18,15 @@
             <Button class="modal__btn" @click="closeApp">Chiqish</Button>
           </div>
         </div>
-        <div v-if="errorText || closeSign">
+        <div v-if="errorText || closeSign" class="centrski">
           <h3 class="modal__title">
             {{ errorText || closeSign }}
           </h3>
-          <Button v-if="errorText" class="modal__btn" @click="closeModel">Berkiting</Button>
+          <Button v-if="errorText" class="modal__btn btn-green" @click="closeModel"
+            >Berkitish</Button
+          >
           <div v-else-if="closeSign" class="modal__btns-box">
-            <Button class="modal__btn" @click="closeApp">Chiqish</Button>
+            <Button class="modal__btn btn-green" @click="closeApp">Chiqish</Button>
           </div>
         </div>
       </div>
@@ -59,7 +61,13 @@ const closeApp = () => {
   padding: 25px;
   border-radius: 20px;
 }
-
+.btn-green {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.5);
+}
 .modal__header {
   text-align: center;
 }
@@ -78,6 +86,7 @@ const closeApp = () => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 20px;
   margin-top: 15px;
 }
@@ -207,7 +216,11 @@ const closeApp = () => {
   transform: rotate(-45deg);
   background-color: #ffffff;
 }
-
+.centrski {
+  /* display: flex; */
+  text-align: center;
+  align-items: center;
+}
 @keyframes rotate-circle {
   0% {
     transform: rotate(-45deg);
