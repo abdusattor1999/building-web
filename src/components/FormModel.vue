@@ -15,7 +15,7 @@
             </div>
           </div>
           <div class="modal__btns-box">
-            <Button class="modal__btn" @click="closeApp">Chiqish</Button>
+            <Button class="modal__btn btn-green" @click="closeApp">Chiqish</Button>
           </div>
         </div>
         <div v-if="errorText || closeSign" class="centrski">
@@ -56,7 +56,7 @@ const closeApp = () => {
   justify-content: center;
   align-items: center;
   width: 90%;
-  height: 300px;
+  height: 360px;
   background: #fff;
   padding: 25px;
   border-radius: 20px;
