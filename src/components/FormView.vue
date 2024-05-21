@@ -53,7 +53,7 @@ import { ref, reactive, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import FormModel from '@/components/FormModel.vue'
 
-const SERVER_URL = 'http://localhost:7778/api/v1'
+const SERVER_URL = 'https://d0b99aadfaf63f3d72efafd67e06edf2.serveo.net/api/v1'
 const route = useRoute()
 
 const formData = reactive({
@@ -78,18 +78,26 @@ const model = reactive({
 const closeModal = () => {
   model.isOpen = false
 }
+const clearModelTextFields = (modelTextFields) => {
+  modelTextFields.forEach((field) => {
+    model[field] = ''
+  })
+}
 
 const setShowModelBool = (show = true, text = '', type = 'success') => {
   model.isOpen = show
   switch (type) {
     case 'success':
       model.successText = text
+      clearModelTextFields(['errorText', 'closeSignText'])
       break
     case 'error':
       model.errorText = text
+      clearModelTextFields(['successText', 'closeSignText'])
       break
     case 'close':
-      model.errorText = text
+      model.closeSignText = text
+      clearModelTextFields(['errorText', 'successText'])
   }
 }
 
@@ -129,7 +137,7 @@ const handleSubmit = async () => {
       body: formDataWithPhoto
     })
     const registerUserData = await response.json()
-    console.log(registerUserData)
+    console.log('Res', registerUserData, response.status)
     if (response.status === 404) {
       setShowModelBool(true, registerUserData.error, 'error')
     } else if (response.status === 400) {
@@ -142,7 +150,7 @@ const handleSubmit = async () => {
   }
 }
 watchEffect(() => {
-  console.log(formData.passport_photo)
+  console.log('Form Data', formData)
 })
 // Fetch choices on component mount (improved for efficiency)
 onMounted(async () => {
