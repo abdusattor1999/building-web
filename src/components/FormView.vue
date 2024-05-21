@@ -32,11 +32,9 @@
       </div>
       <div class="form-group">
         <label for="passportPhoto">Passport Rasmi</label><br />
-        <p v-if="formData.passport_photo">{{ formData.passport_photo.name }}</p>
         <br />
         <input type="file" id="passportPhoto" @change="setUserPhoto" required />
       </div>
-      <input type="hidden" v-model="chatId" />
       <button type="submit" class="submit_button">Yuborish</button>
     </form>
     <FormModel
@@ -59,8 +57,8 @@ const SERVER_URL = 'http://localhost:7778/api/v1'
 const route = useRoute()
 
 const formData = reactive({
-  first_name: '1',
-  last_name: '1',
+  first_name: '',
+  last_name: '',
   phone: '+998901234567',
   passport_photo: '',
   services: [],

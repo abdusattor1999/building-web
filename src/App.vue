@@ -1,5 +1,7 @@
 <script setup>
+import eruda from 'eruda'
 import FormView from './components/FormView.vue'
+eruda.init()
 </script>
 
 <template>
