@@ -53,7 +53,7 @@ import { ref, reactive, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import FormModel from '@/components/FormModel.vue'
 
-const SERVER_URL = 'https://d0b99aadfaf63f3d72efafd67e06edf2.serveo.net/api/v1'
+const SERVER_URL = 'https://ustabolla.sm2002.uz/api/v1'
 const route = useRoute()
 
 const formData = reactive({
